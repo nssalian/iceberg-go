@@ -124,7 +124,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">User Guide</li><li class="chapter-item expanded "><a href="install.html">Install</a></li><li class="chapter-item expanded "><a href="getting-started.html">Getting Started</a></li><li class="chapter-item expanded "><a href="configuration.html">Configuration</a></li><li class="chapter-item expanded "><a href="cli.html">CLI</a></li><li class="chapter-item expanded "><a href="api.html">API</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="row-filter-syntax.html">Row Filter Syntax</a></li><li class="chapter-item expanded "><a href="expression-dsl.html">Expression DSL</a></li><li class="chapter-item expanded "><a href="concurrent-writes.html">Concurrent Writes</a></li></ol></li><li class="chapter-item expanded "><a href="feature-status.html">Feature Status</a></li><li class="chapter-item expanded affix "><li class="part-title">Developer Guide</li><li class="chapter-item expanded "><a href="contributing.html">Contributing</a></li><li class="chapter-item expanded "><a href="community.html">Community</a></li><li class="chapter-item expanded "><a href="glossary.html">Glossary</a></li><li class="chapter-item expanded affix "><li class="part-title">Releases</li><li class="chapter-item expanded "><a href="releases.html">Releases</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="verify-release.html">Verify a release</a></li><li class="chapter-item expanded "><a href="how-to-release.html">How to release</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Ecosystem</li><li class="chapter-item expanded "><a href="ecosystem.html">Other Iceberg implementations</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">User Guide</li><li class="chapter-item expanded "><a href="install.html">Install</a></li><li class="chapter-item expanded "><a href="getting-started.html">Getting Started</a></li><li class="chapter-item expanded "><a href="configuration.html">Configuration</a></li><li class="chapter-item expanded "><a href="cli.html">CLI</a></li><li class="chapter-item expanded "><a href="api.html">API</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="row-filter-syntax.html">Row Filter Syntax</a></li><li class="chapter-item expanded "><a href="expression-dsl.html">Expression DSL</a></li><li class="chapter-item expanded "><a href="concurrent-writes.html">Concurrent Writes</a></li><li class="chapter-item expanded "><a href="metrics-reporting.html">Metrics Reporting</a></li></ol></li><li class="chapter-item expanded "><a href="feature-status.html">Feature Status</a></li><li class="chapter-item expanded affix "><li class="part-title">Developer Guide</li><li class="chapter-item expanded "><a href="contributing.html">Contributing</a></li><li class="chapter-item expanded "><a href="community.html">Community</a></li><li class="chapter-item expanded "><a href="glossary.html">Glossary</a></li><li class="chapter-item expanded affix "><li class="part-title">Releases</li><li class="chapter-item expanded "><a href="releases.html">Releases</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="verify-release.html">Verify a release</a></li><li class="chapter-item expanded "><a href="how-to-release.html">How to release</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Ecosystem</li><li class="chapter-item expanded "><a href="ecosystem.html">Other Iceberg implementations</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -322,7 +322,7 @@ go get github.com/apache/iceberg-go@latest
 go get github.com/apache/arrow-go/v18@latest
 go get github.com/uptrace/bun/driver/sqliteshim@latest
 </code></pre>
-<p><code>iceberg-go</code> itself only registers the local file system. For S3, GCS, or Azure Blob you would also blank-import <code>github.com/apache/iceberg-go/io/gocloud</code>. We are staying on local disk for this tutorial.</p>
+<p><code>iceberg-go</code> itself only registers the local file system. For S3, GCS, or Azure Blob you would also blank-import the matching backend package, such as <code>github.com/apache/iceberg-go/io/gocloud/s3</code>. We are staying on local disk for this tutorial.</p>
 <h2 id="2-open-a-local-catalog"><a class="header" href="#2-open-a-local-catalog">2. Open a local catalog</a></h2>
 <p>The SQL catalog stores its metadata in a database, and the actual data files live under a &quot;warehouse&quot; directory. We will use SQLite for both the catalog DB and a local folder for the warehouse.</p>
 <pre><code class="language-go">package main
@@ -542,12 +542,14 @@ catalog:
 <div class="table-wrapper"><table><thead><tr><th>Key</th><th>Purpose</th></tr></thead><tbody>
 <tr><td><code>default-catalog</code></td><td>Name used when <code>--catalog-name</code> is not passed on the CLI.</td></tr>
 <tr><td><code>max-workers</code></td><td>Worker pool size for concurrent operations. Default <code>5</code>.</td></tr>
-<tr><td><code>catalog.&lt;name&gt;.type</code></td><td>One of <code>rest</code>, <code>hive</code>, <code>glue</code>, <code>sql</code>, <code>hadoop</code>.</td></tr>
+<tr><td><code>catalog.&lt;name&gt;.type</code></td><td>One of <code>rest</code>, <code>hive</code>, <code>glue</code>, <code>sql</code>, <code>hadoop</code>. <code>dynamodb</code> is recognized by the CLI but not implemented yet.</td></tr>
 <tr><td><code>catalog.&lt;name&gt;.uri</code></td><td>Catalog endpoint or DSN.</td></tr>
 <tr><td><code>catalog.&lt;name&gt;.warehouse</code></td><td>Warehouse identifier (REST/Glue) or location (Hive/SQL).</td></tr>
 <tr><td><code>catalog.&lt;name&gt;.credential</code></td><td>Credential string passed through to the catalog's auth handler.</td></tr>
 <tr><td><code>catalog.&lt;name&gt;.output</code></td><td>CLI output format (e.g. <code>text</code>, <code>json</code>).</td></tr>
 <tr><td><code>catalog.&lt;name&gt;.aws-profile</code></td><td>AWS named profile for the Glue catalog. When unset, the AWS SDK default credential chain is used.</td></tr>
+<tr><td><code>catalog.&lt;name&gt;.sql-driver</code></td><td><code>database/sql</code> driver name for the SQL catalog. Maps to the <code>sql.driver</code> property. The default CLI binary only compiles in <code>sqliteshim</code>; other drivers require a custom build.</td></tr>
+<tr><td><code>catalog.&lt;name&gt;.sql-dialect</code></td><td>SQL dialect for the SQL catalog (<code>postgres</code>, <code>mysql</code>, <code>sqlite</code>, <code>mssql</code>, <code>oracle</code>). Maps to the <code>sql.dialect</code> property. The default CLI binary only ships <code>sqlite</code> via <code>sqliteshim</code>; other dialects need a custom build with their drivers.</td></tr>
 <tr><td><code>catalog.&lt;name&gt;.rest.sigv4-enabled</code></td><td>Enable AWS SigV4 signing for REST.</td></tr>
 <tr><td><code>catalog.&lt;name&gt;.rest.signing-name</code></td><td>SigV4 service name.</td></tr>
 <tr><td><code>catalog.&lt;name&gt;.rest.signing-region</code></td><td>SigV4 region.</td></tr>
@@ -565,6 +567,29 @@ catalog:
 <tr><td>Pass-through</td><td><code>WithAdditionalProps</code></td></tr>
 </tbody></table>
 </div>
+<h4 id="metrics-reporting"><a class="header" href="#metrics-reporting">Metrics reporting</a></h4>
+<p>The REST catalog can POST scan and commit metrics to the catalog's
+<code>.../tables/{table}/metrics</code> endpoint. These properties are passed as
+client-supplied catalog properties.</p>
+<div class="table-wrapper"><table><thead><tr><th>Property</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>rest-metrics-reporting-enabled</code></td><td>Opt into POSTing metrics reports. <strong>Off by default.</strong></td></tr>
+<tr><td><code>rest.metrics-reporting-enabled</code></td><td>Legacy dotted alias; consulted only when the canonical key above is absent.</td></tr>
+<tr><td><code>rest-metrics-reporting-timeout-ms</code></td><td>Per-report request/response deadline in milliseconds. Default <code>10000</code>.</td></tr>
+</tbody></table>
+</div>
+<blockquote>
+<p><strong>Note on cross-client parity.</strong> Iceberg Java defaults metrics reporting to
+<em>on</em> (<code>METRICS_REPORTING_ENABLED_DEFAULT=true</code>); iceberg-go deliberately
+defaults it <em>off</em>, so no client emits new outbound telemetry unless it
+explicitly opts in. A Java client that never set the flag will therefore stop
+reporting when ported here until <code>rest-metrics-reporting-enabled=true</code> is set.
+Enablement is read from client properties only — a server cannot turn on
+reporting the client never asked for — but an explicit server override setting
+the flag to <code>false</code> <em>is</em> honored (disabling is always safe), so an operator can
+suppress reporting fleet-wide. <code>rest-metrics-reporting-timeout-ms</code> is a
+Go-specific extension with no Java, PyIceberg, or Rust equivalent; do not
+assume parity on it in multi-client deployments.</p>
+</blockquote>
 <h3 id="hive-cataloghive"><a class="header" href="#hive-cataloghive">Hive (<code>catalog/hive</code>)</a></h3>
 <p>Source: <a href="https://github.com/apache/iceberg-go/blob/main/catalog/hive/options.go"><code>catalog/hive/options.go</code></a>.</p>
 <ul>
@@ -572,6 +597,15 @@ catalog:
 <li><code>WithWarehouse(warehouse string)</code></li>
 <li><code>WithProperties(props iceberg.Properties)</code></li>
 </ul>
+<p>Lock-check catalog properties (passed via <code>WithProperties</code> / <code>catalog.Load</code> props):</p>
+<div class="table-wrapper"><table><thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>iceberg.hive.lock-check-min-wait-ms</code></td><td><code>50</code></td><td>Minimum wait between lock-status checks, in milliseconds. Matches the Java Hive catalog key.</td></tr>
+<tr><td><code>iceberg.hive.lock-check-max-wait-ms</code></td><td><code>5000</code></td><td>Maximum wait between lock-status checks, in milliseconds. Matches the Java Hive catalog key.</td></tr>
+<tr><td><code>lock-check-min-wait-time</code> / <code>lock-check-max-wait-time</code></td><td>same defaults</td><td>Legacy Go aliases that accept Go duration strings (e.g. <code>100ms</code>, <code>5s</code>). Ignored when the corresponding Java key is set.</td></tr>
+<tr><td><code>lock-check-retries</code></td><td><code>4</code></td><td>Go-specific upper bound on check attempts. Java instead uses <code>iceberg.hive.lock-timeout-ms</code> (not wired in Go yet).</td></tr>
+</tbody></table>
+</div>
+<p>Invalid values (non-positive waits/retries, or min ≥ max) are ignored and the previous/default settings are kept.</p>
 <h3 id="glue-catalogglue"><a class="header" href="#glue-catalogglue">Glue (<code>catalog/glue</code>)</a></h3>
 <p>Source: <a href="https://github.com/apache/iceberg-go/blob/main/catalog/glue/options.go"><code>catalog/glue/options.go</code></a>.</p>
 <ul>
@@ -594,12 +628,15 @@ cat, err := sqlcat.NewCatalog(&quot;default&quot;, db, sqlcat.SQLite, iceberg.Pr
 </ul>
 <h2 id="file-system-credentials"><a class="header" href="#file-system-credentials">File-system credentials</a></h2>
 <p>iceberg-go registers the local file system (<code>file://</code>) automatically. Cloud schemes are <em>not</em> registered until you add a blank import:</p>
-<pre><code class="language-go">import _ &quot;github.com/apache/iceberg-go/io/gocloud&quot;
+<pre><code class="language-go">import _ &quot;github.com/apache/iceberg-go/io/gocloud/s3&quot;    // s3, s3a, s3n, oss
+import _ &quot;github.com/apache/iceberg-go/io/gocloud/gcs&quot;   // gs
+import _ &quot;github.com/apache/iceberg-go/io/gocloud/azure&quot; // abfs, abfss, wasb, wasbs
 </code></pre>
-<p>The <code>init()</code> function in <a href="https://github.com/apache/iceberg-go/blob/main/io/gocloud/register.go"><code>io/gocloud/register.go</code></a> registers <code>s3</code>, <code>s3a</code>, <code>s3n</code>, <code>oss</code>, <code>gs</code>, <code>abfs</code>, <code>abfss</code>, <code>wasb</code>, and <code>wasbs</code>. Without the blank import, these schemes return <code>ErrIOSchemeNotFound</code> with a hint to add the import.</p>
+<p>Each backend package links its own cloud SDK. Importing <code>io/gocloud</code> registers all three at once and links all cloud SDKs.</p>
+<p>Without a matching blank import, these schemes return <code>ErrIOSchemeNotFound</code> with a hint naming the package to import.</p>
 <p>All credential and tuning property keys are constants in <a href="https://github.com/apache/iceberg-go/blob/main/io/config.go"><code>io/config.go</code></a>. They can be supplied through table properties, catalog properties, or per-call <code>iceberg.Properties</code> arguments depending on context.</p>
 <h3 id="s3"><a class="header" href="#s3">S3</a></h3>
-<p>Authentication is resolved in this order (<code>io/gocloud/s3.go</code>):</p>
+<p>Authentication is resolved in this order (<code>io/gocloud/s3/s3.go</code>):</p>
 <ol>
 <li>Static credentials in properties: <code>s3.access-key-id</code> + <code>s3.secret-access-key</code> (+ optional <code>s3.session-token</code>).</li>
 <li>The standard AWS SDK v2 default credential chain - environment variables (<code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_SESSION_TOKEN</code>), <code>~/.aws/credentials</code>, container/IAM role.</li>
@@ -619,7 +656,7 @@ cat, err := sqlcat.NewCatalog(&quot;default&quot;, db, sqlcat.SQLite, iceberg.Pr
 </tbody></table>
 </div>
 <h3 id="google-cloud-storage"><a class="header" href="#google-cloud-storage">Google Cloud Storage</a></h3>
-<p>Authentication resolution (<code>io/gocloud/gcs.go</code>):</p>
+<p>Authentication resolution (<code>io/gocloud/gcs/gcs.go</code>):</p>
 <ol>
 <li>Explicit JSON key bytes via <code>gcs.jsonkey</code> or path via <code>gcs.keypath</code>.</li>
 <li>Optional <code>gcs.credtype</code> selecting one of <code>service_account</code>, <code>authorized_user</code>, <code>impersonated_service_account</code>, <code>external_account</code>.</li>
@@ -635,7 +672,7 @@ cat, err := sqlcat.NewCatalog(&quot;default&quot;, db, sqlcat.SQLite, iceberg.Pr
 </tbody></table>
 </div>
 <h3 id="azure-data-lake-storage--blob"><a class="header" href="#azure-data-lake-storage--blob">Azure Data Lake Storage / Blob</a></h3>
-<p>Authentication is selected based on the property keys present (<code>io/gocloud/azure.go</code>):</p>
+<p>Authentication is selected based on the property keys present (<code>io/gocloud/azure/azure.go</code>):</p>
 <ol>
 <li>Shared key: both <code>adls.auth.shared-key.account.name</code> and <code>adls.auth.shared-key.account.key</code> set.</li>
 <li>Per-host SAS token: <code>adls.sas-token.&lt;hostname&gt;</code> (prefix-matched against the storage account host).</li>
@@ -659,7 +696,7 @@ cat, err := sqlcat.NewCatalog(&quot;default&quot;, db, sqlcat.SQLite, iceberg.Pr
 <div class="table-wrapper"><table><thead><tr><th>Variable</th><th>Purpose</th><th>Read at</th></tr></thead><tbody>
 <tr><td><code>GOICEBERG_HOME</code></td><td>Directory containing <code>.iceberg-go.yaml</code>. Defaults to the user's home directory.</td><td><code>config/config.go:87</code></td></tr>
 <tr><td><code>ICEBERG_SQL_DEBUG</code></td><td>SQL catalog query logging - <code>1</code> (failed queries), <code>2</code> (all queries).</td><td><code>catalog/sql/sql.go:206</code></td></tr>
-<tr><td><code>AWS_S3_ENDPOINT</code></td><td>Fallback S3 endpoint when <code>s3.endpoint</code> is unset.</td><td><code>io/gocloud/s3.go:193</code></td></tr>
+<tr><td><code>AWS_S3_ENDPOINT</code></td><td>Fallback S3 endpoint when <code>s3.endpoint</code> is unset.</td><td><code>io/gocloud/s3/s3.go</code></td></tr>
 </tbody></table>
 </div>
 <p>There is no <code>PYICEBERG_*</code>-style env var convention. Use the YAML config file or pass <code>iceberg.Properties</code> to overrides programmatically.</p>
@@ -688,7 +725,8 @@ func init() {
     })
 }
 </code></pre>
-<p><code>io.Register</code> panics on <code>nil</code> factory or duplicate scheme. Built-in schemes: <code>file</code>, <code>&quot;&quot;</code> (the empty scheme). Cloud schemes (<code>s3</code>, <code>gs</code>, <code>abfs</code>, etc.) are registered by <code>io/gocloud</code> only when its package is blank-imported.</p>
+<p><code>io.Register</code> panics on <code>nil</code> factory or duplicate scheme. Built-in schemes: <code>file</code>, <code>&quot;&quot;</code> (the empty scheme).
+Cloud schemes (<code>s3</code>, <code>gs</code>, <code>abfs</code>, etc.) are registered only when the matching backend package under <code>io/gocloud</code> is blank-imported.</p>
 <p><code>io.GetRegisteredSchemes()</code> returns the current scheme list; <code>io.Unregister(scheme)</code> removes one.</p>
 <h3 id="catalog-type-registry"><a class="header" href="#catalog-type-registry">Catalog type registry</a></h3>
 <p>Register a custom catalog type with <a href="https://github.com/apache/iceberg-go/blob/main/catalog/registry.go"><code>catalog.Register</code></a>:</p>
@@ -719,6 +757,14 @@ func init() {
 <tr><td><code>write.target-file-size-bytes</code></td><td>(set by writer)</td><td>Target size for newly written data files. Read in <code>table/arrow_utils.go</code> and <code>table/equality_delete_writer.go</code>.</td></tr>
 </tbody></table>
 </div>
+<h3 id="scan-reads"><a class="header" href="#scan-reads">Scan reads</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Key</th><th>Default</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>read.split.target-size</code></td><td><code>134217728</code></td><td>Target size for coalescing safe row-group ranges when splitting large local Parquet files. A range may exceed the target when no supplied offset can divide it safely.</td></tr>
+</tbody></table>
+</div>
+<p>The Java-compatible <code>read.split.planning-lookback</code> and <code>read.split.open-file-cost</code>
+names and defaults are also exported by the Go API for shared configuration,
+but are reserved for future task-group planning and are not currently read.</p>
 <h3 id="metrics-and-metadata-lifecycle"><a class="header" href="#metrics-and-metadata-lifecycle">Metrics and metadata lifecycle</a></h3>
 <div class="table-wrapper"><table><thead><tr><th>Key</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>write.metadata.metrics.default</code></td><td>Default per-column metrics mode.</td></tr>
@@ -739,12 +785,13 @@ func init() {
 </div>
 <h3 id="snapshot-retention"><a class="header" href="#snapshot-retention">Snapshot retention</a></h3>
 <div class="table-wrapper"><table><thead><tr><th>Key</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>min-snapshots-to-keep</code></td><td>Minimum snapshots to retain when expiring.</td></tr>
-<tr><td><code>max-snapshot-age-ms</code></td><td>Maximum age of retained snapshots.</td></tr>
-<tr><td><code>max-ref-age-ms</code></td><td>Maximum age of branch/tag refs that are not the main branch.</td></tr>
-<tr><td><code>gc.enabled</code></td><td>Gate for orphan-file cleanup.</td></tr>
+<tr><td><code>history.expire.min-snapshots-to-keep</code></td><td>Minimum snapshots to retain when expiring. Default <code>1</code>.</td></tr>
+<tr><td><code>history.expire.max-snapshot-age-ms</code></td><td>Maximum age of retained snapshots. Default <code>432000000</code> (5 days).</td></tr>
+<tr><td><code>history.expire.max-ref-age-ms</code></td><td>Maximum age of branch/tag refs that are not the main branch. Default <code>Long.MAX_VALUE</code> (forever).</td></tr>
+<tr><td><code>gc.enabled</code></td><td>Controls physical garbage collection. Snapshot expiration is rejected when <code>false</code>, and data-file cleanup skips deletion.</td></tr>
 </tbody></table>
 </div>
+<p>The unprefixed retention property names are accepted as compatibility fallbacks. The <code>history.expire.*</code> properties take precedence when both forms are set.</p>
 <h3 id="delete-mode"><a class="header" href="#delete-mode">Delete mode</a></h3>
 <div class="table-wrapper"><table><thead><tr><th>Key</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>write.delete.mode</code></td><td>Delete strategy used by row-level delete writers.</td></tr>
@@ -771,10 +818,13 @@ func init() {
 <tr><td><code>write.parquet.compression-level</code></td><td><code>-1</code> (codec default)</td></tr>
 <tr><td><code>write.parquet.bloom-filter-max-bytes</code></td><td>1 MB</td></tr>
 <tr><td><code>write.parquet.bloom-filter-enabled.column.&lt;name&gt;</code></td><td>(per-column toggle, prefix-matched)</td></tr>
+<tr><td><code>parquet.enable.dictionary</code></td><td><code>true</code> (global dictionary encoding switch; same key as Iceberg Java)</td></tr>
+<tr><td><code>write.parquet.dict-encoding-enabled.column.&lt;name&gt;</code></td><td>(per-column toggle, prefix-matched; overrides the global switch)</td></tr>
 <tr><td><code>write.parquet.shred-variants</code></td><td><code>false</code> (opt-in shredding of top-level variant columns)</td></tr>
 <tr><td><code>write.parquet.variant-inference-buffer-size</code></td><td>100 rows (buffered per file to infer the shredding schema)</td></tr>
 </tbody></table>
 </div>
+<p>The bloom filter and dictionary toggles are parsed the way Iceberg Java parses them: only <code>true</code> (case-insensitive) enables, so any other value — including <code>1</code> — reads as <code>false</code>.</p>
 <h3 id="parquet-reader"><a class="header" href="#parquet-reader">Parquet reader</a></h3>
 <div class="table-wrapper"><table><thead><tr><th>Key</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>read.parquet.batch-size</code></td><td>Arrow record-batch size used by the Parquet reader.</td></tr>
@@ -815,8 +865,8 @@ docker run -p 8181:8181 apache/iceberg-rest-fixture:latest
 </code></pre>
 <p>Catalog connection flags are global and apply to every subcommand:</p>
 <div class="table-wrapper"><table><thead><tr><th>Flag</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>--catalog</code></td><td>Catalog type: <code>rest</code> (default), <code>glue</code>, <code>hive</code>, <code>hadoop</code></td></tr>
-<tr><td><code>--uri</code></td><td>Catalog URI (REST/Hive)</td></tr>
+<tr><td><code>--catalog</code></td><td>Catalog type: <code>rest</code> (default), <code>glue</code>, <code>hive</code>, <code>hadoop</code>, <code>sql</code>. <code>dynamodb</code> is recognized but not implemented yet.</td></tr>
+<tr><td><code>--uri</code></td><td>Catalog URI (REST/Hive) or SQL DSN</td></tr>
 <tr><td><code>--warehouse</code></td><td>Warehouse location</td></tr>
 <tr><td><code>--credential</code></td><td>Credentials for the catalog</td></tr>
 <tr><td><code>--token</code></td><td>OAuth token (skips OAuth flow)</td></tr>
@@ -824,6 +874,8 @@ docker run -p 8181:8181 apache/iceberg-rest-fixture:latest
 <tr><td><code>--catalog-name</code></td><td>Catalog name to load from config file (default <code>default</code>)</td></tr>
 <tr><td><code>--config</code></td><td>Path to a config file</td></tr>
 <tr><td><code>--aws-profile</code></td><td>AWS named profile to use (Glue catalog); overrides <code>aws-profile</code> in the config file</td></tr>
+<tr><td><code>--sql-driver</code></td><td><code>database/sql</code> driver name for the SQL catalog. The default CLI binary only compiles in <code>sqliteshim</code>; other drivers require a custom build.</td></tr>
+<tr><td><code>--sql-dialect</code></td><td>SQL dialect for the SQL catalog. The SQL catalog library supports <code>postgres</code>, <code>mysql</code>, <code>sqlite</code>, <code>mssql</code>, and <code>oracle</code>, but the default CLI binary only ships the <code>sqlite</code> dialect via <code>sqliteshim</code>. Other dialects need a custom build that blank-imports their <code>database/sql</code> drivers.</td></tr>
 </tbody></table>
 </div>
 <p>To avoid passing flags every time, define a config file at <code>~/.iceberg-go.yaml</code>:</p>
@@ -833,6 +885,15 @@ catalog:
     type: rest
     uri: http://localhost:8181
     warehouse: s3://my-warehouse
+</code></pre>
+<p>SQL catalog example:</p>
+<pre><code class="language-yaml">catalog:
+  local:
+    type: sql
+    uri: file:iceberg-catalog.db
+    warehouse: file:///tmp/warehouse
+    sql-driver: sqliteshim
+    sql-dialect: sqlite
 </code></pre>
 <p>Flags on the command line override values from the config file.</p>
 <h2 id="output-format"><a class="header" href="#output-format">Output format</a></h2>
@@ -1386,7 +1447,7 @@ err := txn.ExpireSnapshots(/* options */)
 // Roll back to a previous snapshot
 err = txn.RollbackToSnapshot(targetSnapshotID)
 </code></pre>
-<p>Tune retention with the <code>min-snapshots-to-keep</code>, <code>max-snapshot-age-ms</code>, and <code>max-ref-age-ms</code> table properties (see <a href="./configuration.html">Configuration</a>).</p>
+<p>Tune retention with the <code>history.expire.min-snapshots-to-keep</code>, <code>history.expire.max-snapshot-age-ms</code>, and <code>history.expire.max-ref-age-ms</code> table properties (see <a href="./configuration.html">Configuration</a>).</p>
 <h2 id="maintenance"><a class="header" href="#maintenance">Maintenance</a></h2>
 <h3 id="orphan-file-cleanup"><a class="header" href="#orphan-file-cleanup">Orphan file cleanup</a></h3>
 <pre><code class="language-go">import (
@@ -1783,6 +1844,143 @@ not yet wrap their conflict errors, so the retry loop will not fire on them.</p>
   ~ specific language governing permissions and limitations
   ~ under the License.
 -->
+<h1 id="metrics-reporting-1"><a class="header" href="#metrics-reporting-1">Metrics Reporting</a></h1>
+<p>Iceberg Go implements Iceberg's Metrics Reporting API. After scan planning it can
+emit a <strong><code>ScanReport</code></strong> (files and manifests considered, scanned, and skipped;
+bytes read; planning duration), and after a commit a <strong><code>CommitReport</code></strong> (commit
+attempts, duration, and the added/removed/total file, record, and delete counts).
+These metrics are otherwise invisible from outside the client; a reporter gives
+operators a standard way to collect them.</p>
+<p>A pluggable <a href="https://pkg.go.dev/github.com/apache/iceberg-go/metrics#Reporter"><code>metrics.Reporter</code></a>
+is the sink that receives those reports.</p>
+<h2 id="opt-in-by-default"><a class="header" href="#opt-in-by-default">Opt-in by default</a></h2>
+<p>Reporting is <strong>strictly opt-in</strong>. With no reporter configured the instrumented
+code paths do no work, and the client emits no logs and no network traffic.</p>
+<p>This is a deliberate divergence from Iceberg Java, which defaults to the logging
+reporter. A library must not start emitting output the caller never asked for, so
+Iceberg Go defaults to a no-op reporter until you select one. Callers migrating
+from Java that want reports by default must select the <code>logging</code> reporter
+explicitly.</p>
+<h2 id="selecting-a-reporter"><a class="header" href="#selecting-a-reporter">Selecting a reporter</a></h2>
+<h3 id="catalog-wide-via-a-property"><a class="header" href="#catalog-wide-via-a-property">Catalog-wide, via a property</a></h3>
+<p>Set <code>metrics-reporter-impl</code> to a registered reporter name. Every table loaded
+from the catalog inherits it. This works for REST-catalog config too, since it is
+an ordinary catalog property.</p>
+<pre><code class="language-go">cat, err := catalog.Load(ctx, &quot;prod&quot;, iceberg.Properties{
+    &quot;metrics-reporter-impl&quot;: &quot;logging&quot;, // built-in: &quot;nop&quot; (default) or &quot;logging&quot;
+})
+</code></pre>
+<p>An unrecognized name is an error, so a typo surfaces rather than silently
+disabling metrics.</p>
+<h3 id="per-scan-override"><a class="header" href="#per-scan-override">Per-scan override</a></h3>
+<p>Override the reporter for a single scan with <code>table.WithReporter</code>; it takes
+precedence over the reporter inherited from the table.</p>
+<pre><code class="language-go">inmem := &amp;metrics.InMemoryReporter{}
+
+scan := tbl.Scan(table.WithReporter(inmem))
+// ... run the scan ...
+
+for _, report := range inmem.Reports() {
+    if sr, ok := report.(metrics.ScanReport); ok {
+        fmt.Println(sr.TableName, sr.Metrics.ResultDataFiles)
+    }
+}
+</code></pre>
+<h2 id="built-in-reporters"><a class="header" href="#built-in-reporters">Built-in reporters</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Reporter</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>metrics.NopReporter{}</code></td><td>Discards every report. The default when nothing is configured.</td></tr>
+<tr><td><code>metrics.NewLoggingReporter(logger)</code></td><td>Logs each report via an <code>slog.Logger</code> (<code>slog.Default()</code> when <code>nil</code>). Registered as <code>&quot;logging&quot;</code>.</td></tr>
+<tr><td><code>&amp;metrics.InMemoryReporter{}</code></td><td>Retains every report for inspection via <code>Reports()</code>; <code>Reset()</code> clears them. Intended for tests.</td></tr>
+<tr><td><code>metrics.Combine(reporters...)</code></td><td>Fans each report out to several reporters. A panic in one is isolated from the rest.</td></tr>
+</tbody></table>
+</div>
+<h2 id="writing-a-custom-reporter"><a class="header" href="#writing-a-custom-reporter">Writing a custom reporter</a></h2>
+<p>Implement the two-method <a href="https://pkg.go.dev/github.com/apache/iceberg-go/metrics#Reporter"><code>Reporter</code></a>
+interface and type-switch on the concrete report:</p>
+<pre><code class="language-go">type myReporter struct{}
+
+func (myReporter) Report(ctx context.Context, report metrics.MetricsReport) {
+    switch r := report.(type) {
+    case metrics.ScanReport:
+        // record r.Metrics ...
+    case metrics.CommitReport:
+        // record r.Metrics ...
+    }
+}
+
+func (myReporter) Close() error { return nil } // release any held resources
+</code></pre>
+<p>Two contract rules matter:</p>
+<ul>
+<li><strong>Never block or fail the operation.</strong> <code>Report</code> is called inline at the
+scan/commit completion point. A network-backed reporter must dispatch the send
+on a background worker, and any error must be handled internally (logged and
+swallowed), never returned to the caller.</li>
+<li><strong>Be safe for concurrent use.</strong> <code>Report</code> may be called from multiple
+goroutines.</li>
+</ul>
+<p>To make a custom reporter selectable by name from <code>metrics-reporter-impl</code>,
+register a factory for it (typically from <code>init</code>):</p>
+<pre><code class="language-go">func init() {
+    metrics.Register(&quot;my-reporter&quot;, func(props map[string]string) (metrics.Reporter, error) {
+        return myReporter{}, nil
+    })
+}
+</code></pre>
+<h2 id="reporting-to-a-rest-catalog"><a class="header" href="#reporting-to-a-rest-catalog">Reporting to a REST catalog</a></h2>
+<p>A REST catalog can also POST each report to the catalog's
+<code>.../tables/{table}/metrics</code> endpoint. This is a separate opt-in from the
+in-process reporter above and is <strong>off by default</strong>; the POST is dispatched on a
+background worker so it never stalls a scan or commit. See the
+<a href="./configuration.html#metrics-reporting">REST metrics-reporting properties</a> for the
+enablement flag and timeout.</p>
+<h2 id="opentelemetry"><a class="header" href="#opentelemetry">OpenTelemetry</a></h2>
+<blockquote>
+<p><strong>Experimental.</strong> The OpenTelemetry metric and attribute names track the
+still-unmerged Iceberg Java reporter
+(<a href="https://github.com/apache/iceberg/pull/16250">apache/iceberg#16250</a>) and may
+change to stay aligned with it.</p>
+</blockquote>
+<p>The <code>metrics/otel</code> package provides an OpenTelemetry-backed reporter. The host
+owns the OpenTelemetry SDK; the reporter only looks up a meter (the global
+<code>MeterProvider</code> by default, or one you pass with <code>WithMeter</code>).</p>
+<pre><code class="language-go">import &quot;github.com/apache/iceberg-go/metrics/otel&quot;
+
+rep, err := otel.NewReporter(
+    otel.WithMeter(meter),
+    otel.WithAttributes(otel.AttrTableName, otel.AttrOperation),
+)
+</code></pre>
+<p>It exports a curated subset of the report fields under <code>iceberg.scan.*</code> /
+<code>iceberg.commit.*</code> instrument names (e.g. <code>iceberg.scan.planning.duration</code>,
+<code>iceberg.scan.result.data_files</code>, <code>iceberg.commit.duration</code>,
+<code>iceberg.commit.data_files.added</code>).</p>
+<p><code>WithAttributes</code> bounds label cardinality by allowlist. The default set is table
+name + operation; schema id (<code>otel.AttrSchemaID</code>) is opt-in. The snapshot id is
+<strong>never</strong> attached as a metric attribute because it is unbounded — per-snapshot
+detail stays available through the full reports and the table's snapshot history.</p>
+<p>The OpenTelemetry reporter is not registered under a <code>metrics-reporter-impl</code> name
+automatically. To select it by property, register a factory for it as shown in
+<a href="metrics-reporting.html#writing-a-custom-reporter">Writing a custom reporter</a>; otherwise pass the
+instance to <code>table.WithReporter</code> or <code>table.WithMetricsReporter</code>.</p>
+<div style="break-before: page; page-break-before: always;"></div><!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one
+  ~ or more contributor license agreements.  See the NOTICE file
+  ~ distributed with this work for additional information
+  ~ regarding copyright ownership.  The ASF licenses this file
+  ~ to you under the Apache License, Version 2.0 (the
+  ~ "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~
+  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+-->
 <h1 id="feature-status"><a class="header" href="#feature-status">Feature Status</a></h1>
 <p>This page tracks what Apache Iceberg Go currently supports. The matrix is kept in sync with the project <a href="https://github.com/apache/iceberg-go/blob/main/README.md"><code>README.md</code></a>; if you spot a discrepancy, file an issue.</p>
 <h2 id="spec-format-version-coverage"><a class="header" href="#spec-format-version-coverage">Spec format version coverage</a></h2>
@@ -1794,7 +1992,7 @@ not yet wrap their conflict errors, so the retry loop will not fire on them.</p>
 <tr><td>Sequence numbers</td><td>Supported</td></tr>
 <tr><td>Manifest entry status (added / existing / deleted)</td><td>Supported</td></tr>
 <tr><td>Positional deletes</td><td>Supported (read + write)</td></tr>
-<tr><td>Equality deletes</td><td>Supported (read + write). Write via <code>Transaction.WriteEqualityDeletes</code>; row-level commits via <code>Transaction.NewRowDelta</code></td></tr>
+<tr><td>Equality deletes</td><td>Supported (read + write). Write via <code>Transaction.WriteEqualityDeletes</code>; row-level commits via <code>Transaction.NewRowDelta</code>; delete-only CDC via <code>Transaction.CommitEqualityDeletes</code></td></tr>
 <tr><td>Partition spec evolution</td><td>Supported</td></tr>
 <tr><td>Sort order enforcement on write</td><td>Supported (PR <a href="https://github.com/apache/iceberg-go/pull/1157">#1157</a>, closes <a href="https://github.com/apache/iceberg-go/issues/833">#833</a>)</td></tr>
 <tr><td><code>ReplaceDataFiles</code> using <code>OpReplace</code></td><td>Pending (<a href="https://github.com/apache/iceberg-go/issues/841">#841</a>)</td></tr>
@@ -1824,7 +2022,7 @@ not yet wrap their conflict errors, so the retry loop will not fire on them.</p>
 <tr><td style="text-align: center">Local Filesystem</td><td style="text-align: center">X</td></tr>
 </tbody></table>
 </div>
-<p>S3, GCS, and Azure require a blank import: <code>_ &quot;github.com/apache/iceberg-go/io/gocloud&quot;</code>. See <a href="./configuration.html">Configuration</a>.</p>
+<p>S3, GCS, and Azure each require a blank import of their backend package, for example <code>_ &quot;github.com/apache/iceberg-go/io/gocloud/s3&quot;</code>. See <a href="./configuration.html">Configuration</a>.</p>
 <h2 id="metadata-operations"><a class="header" href="#metadata-operations">Metadata operations</a></h2>
 <div class="table-wrapper"><table><thead><tr><th style="text-align: left">Operation</th><th style="text-align: center">Supported</th></tr></thead><tbody>
 <tr><td style="text-align: left">Get Schema</td><td style="text-align: center">X</td></tr>
@@ -1879,6 +2077,18 @@ not yet wrap their conflict errors, so the retry loop will not fire on them.</p>
 <tr><td style="text-align: left">Write Eq Delete</td><td style="text-align: center">X</td></tr>
 <tr><td style="text-align: left">Row Delta</td><td style="text-align: center">X</td></tr>
 </tbody></table>
+</div>
+<h2 id="metrics-reporting-2"><a class="header" href="#metrics-reporting-2">Metrics reporting</a></h2>
+<p>Iceberg's Metrics Reporting API is supported. Reporting is opt-in (default no-op). See <a href="./metrics-reporting.html">Metrics Reporting</a>.</p>
+<div class="table-wrapper"><table><thead><tr><th>Feature</th><th>Status</th></tr></thead><tbody>
+<tr><td><code>ScanReport</code> (scan-planning metrics)</td><td>Supported</td></tr>
+<tr><td><code>CommitReport</code> (commit metrics)</td><td>Supported</td></tr>
+<tr><td>Built-in reporters (nop, logging, in-memory, combine)</td><td>Supported</td></tr>
+<tr><td>Reporter selection via <code>metrics-reporter-impl</code> + registry</td><td>Supported</td></tr>
+<tr><td>REST <code>/metrics</code> reporter (opt-in POST to catalog)</td><td>Supported</td></tr>
+<tr><td>OpenTelemetry reporter (<code>metrics/otel</code>)</td><td>Supported (experimental; tracks Java <a href="https://github.com/apache/iceberg/pull/16250">apache/iceberg#16250</a>)</td></tr>
+<tr><td><code>ScanReport.filter</code> as structured Expression JSON</td><td>Supported (sanitized; falls back to always-true)</td></tr>
+</tbody></table>
 </div><div style="break-before: page; page-break-before: always;"></div><!--
   ~ Licensed to the Apache Software Foundation (ASF) under one
   ~ or more contributor license agreements.  See the NOTICE file
@@ -1915,7 +2125,7 @@ not yet wrap their conflict errors, so the retry loop will not fire on them.</p>
 <ul>
 <li>Reference the issue number in your PR description (e.g., &quot;Fixes #123&quot;).</li>
 <li>Keep PRs focused — one issue per PR.</li>
-<li>Run <code>go test ./...</code>, <code>gofmt</code>, and <code>golangci-lint run</code> before pushing. CI runs all of these too, but catching issues locally saves a round-trip.</li>
+<li>Run <code>make test</code> and <code>make lint</code> before pushing. CI runs all of these too, but catching issues locally saves a round-trip. <code>make lint-install</code> will install the linter if you don't have it yet.</li>
 <li>All commits must have a <code>Signed-off-by</code> line (<a href="https://developercertificate.org/">DCO</a>).</li>
 </ul>
 <h2 id="code-review"><a class="header" href="#code-review">Code Review</a></h2>
@@ -1928,7 +2138,8 @@ not yet wrap their conflict errors, so the retry loop will not fire on them.</p>
 <pre><code class="language-bash">git clone https://github.com/apache/iceberg-go.git
 cd iceberg-go
 go build ./...
-go test ./...
+make test # runs all unit tests
+make test-race # runs all unit tests with race detector
 </code></pre>
 <h3 id="integration-tests"><a class="header" href="#integration-tests">Integration Tests</a></h3>
 <p>Integration tests require Docker and are gated behind a build tag:</p>
